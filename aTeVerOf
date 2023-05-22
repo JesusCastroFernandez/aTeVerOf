@@ -1,0 +1,45 @@
+import numpy as np
+
+def oracle(graph, target):
+    # Implementación del oráculo cuántico
+    oracle_matrix = np.eye(len(graph))
+    oracle_matrix[target, target] = -1
+    return oracle_matrix
+
+def diffusion(graph):
+    # Implementación de la difusión cuántica
+    diffusion_matrix = 2 * np.ones((len(graph), len(graph))) / len(graph)
+    diffusion_matrix -= np.eye(len(graph))
+    return diffusion_matrix
+
+def quantum_graph_search(graph, target):
+    num_qubits = int(np.log2(len(graph)))
+    num_iterations = int(np.pi / 4 * np.sqrt(len(graph)))
+
+    # Inicialización de los qubits
+    state = np.ones(len(graph)) / np.sqrt(len(graph))
+
+    # Aplicación del algoritmo de Grover
+    for _ in range(num_iterations):
+        # Oráculo
+        oracle_matrix = oracle(graph, target)
+        state = oracle_matrix.dot(state)
+
+        # Difusión
+        diffusion_matrix = diffusion(graph)
+        state = diffusion_matrix.dot(state)
+
+    # Medición del estado final
+    measurements = np.random.choice(range(len(graph)), p=np.square(np.abs(state)))
+    return measurements
+
+# Ejemplo de uso
+graph = np.array([[0, 1, 0, 0],
+                  [1, 0, 1, 1],
+                  [0, 1, 0, 1],
+                  [0, 1, 1, 0]])
+
+target_node = 3
+
+result = quantum_graph_search(graph, target_node)
+print("Nodo encontrado:", result)
